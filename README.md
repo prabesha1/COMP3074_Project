@@ -30,10 +30,15 @@ This milestone focuses solely on the UI Prototype — meaning all screens, layou
 ✨ Prototype Highlights
 
 ✅ Complete Screen Set – Splash · List · Details · Add · Map · About
+
 ✅ Working Navigation – Built with Jetpack Compose Navigation
+
 ✅ Material 3 Design – Modern, clean, and fully responsive
+
 ✅ Dummy Data – Static restaurant list for demo purposes
+
 ✅ Interactive Buttons & Flows – Simulated add / map / details screens
+
 
 🧭 Navigation Flow
 SplashScreen → RestaurantListScreen
