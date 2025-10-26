@@ -11,6 +11,12 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.DineSmart">
+
+        <!-- Replace YOUR_API_KEY with your Google Maps API key -->
+        <meta-data
+            android:name="AIzaSyBELXl2Vp59e54U93VwCS60s26x4H20j-k"
+            android:value="YOUR_API_KEY" />
+
         <activity
             android:name=".MainActivity"
             android:exported="true"
