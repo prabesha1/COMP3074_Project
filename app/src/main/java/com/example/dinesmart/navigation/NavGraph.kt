@@ -15,6 +15,6 @@ fun NavGraph(navController: NavHostController) {
         composable(Routes.DETAILS) { RestaurantDetailScreen(navController) }
         composable(Routes.ADD) { AddRestaurantScreen(navController) }
         composable(Routes.MAP) { MapScreen(navController) }
-        composable(Routes.ABOUT) { AboutScreen() }
+        composable(Routes.ABOUT) { AboutScreen(navController) }
     }
 }

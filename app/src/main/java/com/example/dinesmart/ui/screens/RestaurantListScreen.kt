@@ -3,8 +3,10 @@ package com.example.dinesmart.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Place
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
@@ -27,21 +29,30 @@ fun RestaurantListScreen(navController: NavHostController) {
     Scaffold(
         topBar = { TopAppBar(title = { Text("Restaurants") }) },
         floatingActionButton = {
-            FloatingActionButton(onClick = { navController.navigate(Routes.ADD) }) {
-                Icon(Icons.Default.Add, contentDescription = "Add")
+            FloatingActionButton(onClick = { navController.navigate(Routes.ADD) },
+                containerColor = MaterialTheme.colorScheme.primary) {
+                Icon(Icons.Default.Add, contentDescription = "Add restaurant")
             }
         }
     ) { padding ->
         LazyColumn(Modifier.padding(padding).padding(16.dp)) {
             items(restaurants) { restaurant ->
                 ElevatedCard(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-                    onClick = { navController.navigate(Routes.DETAILS) }
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 6.dp),
+                    onClick = { navController.navigate(Routes.DETAILS) },
+                    shape = RoundedCornerShape(8.dp)
                 ) {
-                    Column(Modifier.padding(16.dp)) {
-                        Text(restaurant.name, style = MaterialTheme.typography.titleMedium)
-                        Text(restaurant.tags, style = MaterialTheme.typography.bodySmall)
-                        Text("\u2b50 Rating: ${restaurant.rating}/5")
+                    Row(Modifier.padding(12.dp), verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+                        Icon(Icons.Default.Place, contentDescription = "Restaurant location", modifier = Modifier.size(40.dp))
+                        Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            Text(restaurant.name, style = MaterialTheme.typography.titleMedium)
+                            Spacer(Modifier.height(4.dp))
+                            Text(restaurant.tags, style = MaterialTheme.typography.bodySmall)
+                        }
+                        Text("\u2b50 ${restaurant.rating}", style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }
