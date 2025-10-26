@@ -5,10 +5,20 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 
 @Composable
 fun AboutScreen() {
+    val context = LocalContext.current
+    val versionName = try {
+        val pInfo = context.packageManager.getPackageInfo(context.packageName, 0)
+        pInfo.versionName ?: "1.0.0"
+    } catch (_: Exception) {
+        // Fallback if package info can't be retrieved
+        "1.0.0"
+    }
+
     Box(
         modifier = Modifier
             .fillMaxSize()
@@ -26,7 +36,7 @@ fun AboutScreen() {
                 modifier = Modifier.padding(horizontal = 16.dp)
             )
             Spacer(modifier = Modifier.height(20.dp))
-            Text("Version: 1.0.0", style = MaterialTheme.typography.bodyMedium)
+            Text("Version: $versionName", style = MaterialTheme.typography.bodyMedium)
         }
     }
 }

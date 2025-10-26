@@ -9,14 +9,15 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import com.example.dinesmart.navigation.Routes
 
 // Data class representing a restaurant
 data class Restaurant(val name: String, val tags: String, val rating: Int)
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun RestaurantListScreen(navController: NavController) {
+fun RestaurantListScreen(navController: NavHostController) {
     val restaurants = listOf(
         Restaurant("Sushi Place", "Japanese, Sushi", 4),
         Restaurant("Burger Hub", "Fast Food", 5),
@@ -26,7 +27,7 @@ fun RestaurantListScreen(navController: NavController) {
     Scaffold(
         topBar = { TopAppBar(title = { Text("Restaurants") }) },
         floatingActionButton = {
-            FloatingActionButton(onClick = { navController.navigate("add") }) {
+            FloatingActionButton(onClick = { navController.navigate(Routes.ADD) }) {
                 Icon(Icons.Default.Add, contentDescription = "Add")
             }
         }
@@ -35,12 +36,12 @@ fun RestaurantListScreen(navController: NavController) {
             items(restaurants) { restaurant ->
                 ElevatedCard(
                     modifier = Modifier.fillMaxWidth().padding(vertical = 6.dp),
-                    onClick = { navController.navigate("details") }
+                    onClick = { navController.navigate(Routes.DETAILS) }
                 ) {
                     Column(Modifier.padding(16.dp)) {
                         Text(restaurant.name, style = MaterialTheme.typography.titleMedium)
                         Text(restaurant.tags, style = MaterialTheme.typography.bodySmall)
-                        Text("⭐ Rating: ${restaurant.rating}/5")
+                        Text("\u2b50 Rating: ${restaurant.rating}/5")
                     }
                 }
             }

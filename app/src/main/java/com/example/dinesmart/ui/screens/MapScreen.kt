@@ -7,12 +7,13 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import androidx.navigation.NavHostController
+import com.example.dinesmart.navigation.Routes
 import com.example.dinesmart.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun MapScreen(navController: NavController) {
+fun MapScreen(navController: NavHostController) {
     Scaffold(topBar = { TopAppBar(title = { Text("Map View") }) }) { padding ->
         Column(Modifier.padding(padding).padding(16.dp)) {
             Text("Google Map (placeholder)", style = MaterialTheme.typography.bodyLarge)

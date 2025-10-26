@@ -6,11 +6,11 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
-import androidx.navigation.NavController
+import androidx.navigation.NavHostController
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AddRestaurantScreen(navController: NavController) {
+fun AddRestaurantScreen(navController: NavHostController) {
     var name by remember { mutableStateOf("") }
     var address by remember { mutableStateOf("") }
     var phone by remember { mutableStateOf("") }
@@ -30,8 +30,8 @@ fun AddRestaurantScreen(navController: NavController) {
                 OutlinedTextField(value = address, onValueChange = { address = it }, label = { Text("Address") })
                 OutlinedTextField(value = phone, onValueChange = { phone = it }, label = { Text("Phone") })
                 Spacer(Modifier.height(12.dp))
-                Button(onClick = { navController.popBackStack() }) {
-                    Text("Save (Placeholder)")
+                Button(onClick = { navController.popBackStack() }, enabled = name.isNotBlank()) {
+                    Text("Save")
                 }
             }
         }
