@@ -13,7 +13,7 @@ Professor: Przemyslaw Pawluk
 
 Semester: Fall 2025
 
-Group: G-90
+Group: G-55
 
 Project Phase: 🧩 UI Prototype (Milestone 2)
 
