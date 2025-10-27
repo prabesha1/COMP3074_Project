@@ -2,16 +2,13 @@ package com.example.dinesmart.ui.screens
 
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.RepeatMode
-import androidx.compose.animation.core.keyframes
 import androidx.compose.animation.core.rememberInfiniteTransition
 import androidx.compose.animation.core.animateFloat
 import androidx.compose.animation.core.infiniteRepeatable
+import androidx.compose.animation.core.tween
 import com.airbnb.lottie.compose.*
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.lazy.LazyRow
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -19,9 +16,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.foundation.layout.BoxWithConstraints
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.coerceIn
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -31,7 +25,6 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -41,6 +34,12 @@ import com.example.dinesmart.navigation.Routes
 import com.example.dinesmart.R
 import com.example.dinesmart.data.RestaurantViewModel
 import com.example.dinesmart.data.Restaurant
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.filled.Place
+import androidx.compose.material.icons.filled.Restaurant
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -59,10 +58,7 @@ fun SplashScreen(navController: NavHostController) {
         initialValue = 0.96f,
         targetValue = 1.06f,
         animationSpec = infiniteRepeatable(
-            animation = keyframes {
-                durationMillis = 1400
-                1.06f at 700 with FastOutSlowInEasing
-            },
+            animation = tween(durationMillis = 1400, easing = FastOutSlowInEasing),
             repeatMode = RepeatMode.Reverse
         )
     )
@@ -104,7 +100,8 @@ fun SplashScreen(navController: NavHostController) {
                         .semantics { contentDescription = "App animation" }
                 ) {
                     Box(contentAlignment = Alignment.Center) {
-                        LottieAnimation(composition, progress, modifier = Modifier.fillMaxSize())
+                        // pass progress as a lambda to the LottieAnimation (newer API)
+                        LottieAnimation(composition, { progress }, modifier = Modifier.fillMaxSize())
                     }
                 }
 
@@ -138,14 +135,14 @@ fun SplashScreen(navController: NavHostController) {
                     OutlinedButton(
                         onClick = { navController.navigate(Routes.MAP) },
                         colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
-                        border = ButtonDefaults.outlinedButtonBorder
+                        border = ButtonDefaults.outlinedButtonBorder(enabled = true)
                     ) {
                         Text("Map")
                     }
                 }
             }
 
-            // Middle content: featured restaurants (responsive widths)
+            // Middle content: featured restaurants (horizontal carousel)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -158,30 +155,40 @@ fun SplashScreen(navController: NavHostController) {
                 )
                 Spacer(Modifier.height(8.dp))
 
-                BoxWithConstraints {
-                    val maxW: Dp = this.maxWidth
-                    // cardWidth is 60% of available width but clamped between 160 and 320 dp
-                    val cardWidth: Dp = (maxW * 0.6f).coerceIn(160.dp, 320.dp)
-
-                    LazyRow(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                        items(featured) { item ->
-                            Card(
-                                modifier = Modifier
-                                    .widthIn(min = 140.dp, max = cardWidth)
-                                    .heightIn(min = 120.dp),
-                                shape = RoundedCornerShape(12.dp),
-                                colors = CardDefaults.cardColors(containerColor = Color(0x99FFFFFF))
-                            ) {
-                                Column(modifier = Modifier.padding(12.dp)) {
-                                    Text(item.name, style = MaterialTheme.typography.titleMedium)
-                                    Spacer(Modifier.height(6.dp))
-                                    Text(item.tags, style = MaterialTheme.typography.bodySmall)
-                                    Spacer(Modifier.height(10.dp))
-                                    Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                                        Text("${item.rating} \u2b50", style = MaterialTheme.typography.bodyMedium)
-                                        Button(onClick = { navController.navigate(Routes.detailsRoute(item.id)) }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B2DFF))) {
-                                            Text("Open", color = Color.White)
+                // Horizontal carousel: use simple scrolling Row for consistent horizontal behavior
+                val scrollState = rememberScrollState()
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .horizontalScroll(scrollState)
+                        .padding(vertical = 8.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    featured.forEach { item ->
+                        Card(
+                            modifier = Modifier
+                                .width(260.dp)
+                                .height(140.dp),
+                            shape = RoundedCornerShape(12.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color(0x99FFFFFF))
+                        ) {
+                            Column(modifier = Modifier.padding(12.dp)) {
+                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+                                    Text(item.name, style = MaterialTheme.typography.titleMedium, color = Color.Black, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                                    Surface(shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
+                                        Row(Modifier.padding(horizontal = 8.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                                            Icon(Icons.Default.Star, contentDescription = "rating", tint = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.size(16.dp))
+                                            Spacer(Modifier.width(6.dp))
+                                            Text("${item.rating}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
                                         }
+                                    }
+                                }
+                                Spacer(Modifier.height(6.dp))
+                                Text(item.tags, style = MaterialTheme.typography.bodySmall, color = Color.Black, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
+                                Spacer(Modifier.weight(1f))
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                                    Button(onClick = { navController.navigate(Routes.detailsRoute(item.id)) }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B2DFF))) {
+                                        Text("Open", color = Color.White)
                                     }
                                 }
                             }
@@ -190,34 +197,27 @@ fun SplashScreen(navController: NavHostController) {
                 }
             }
 
-            // Bottom stats bar
+            // Bottom stats bar redesigned: pill-style stats for better visual balance
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .align(Alignment.BottomCenter)
                     .padding(20.dp),
-                horizontalArrangement = Arrangement.SpaceBetween
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                Surface(shape = RoundedCornerShape(12.dp), color = Color(0x66FFFFFF)) {
-                    Row(modifier = Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("24", style = MaterialTheme.typography.titleMedium.copy(color = Color.White))
-                        Column { Text("Restaurants", style = MaterialTheme.typography.bodySmall.copy(color = Color.White)) }
+                // Stat pill composable
+                fun StatPill(value: String, label: String) = @Composable {
+                    Surface(shape = RoundedCornerShape(16.dp), color = Color(0x66FFFFFF)) {
+                        Column(modifier = Modifier.padding(horizontal = 14.dp, vertical = 10.dp), horizontalAlignment = Alignment.CenterHorizontally) {
+                            Text(value, style = MaterialTheme.typography.titleMedium.copy(color = Color.White))
+                            Text(label, style = MaterialTheme.typography.bodySmall.copy(color = Color.White))
+                        }
                     }
                 }
 
-                Surface(shape = RoundedCornerShape(12.dp), color = Color(0x66FFFFFF)) {
-                    Row(modifier = Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("4.5", style = MaterialTheme.typography.titleMedium.copy(color = Color.White))
-                        Column { Text("Avg Rating", style = MaterialTheme.typography.bodySmall.copy(color = Color.White)) }
-                    }
-                }
-
-                Surface(shape = RoundedCornerShape(12.dp), color = Color(0x66FFFFFF)) {
-                    Row(modifier = Modifier.padding(12.dp), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text("8", style = MaterialTheme.typography.titleMedium.copy(color = Color.White))
-                        Column { Text("Open Now", style = MaterialTheme.typography.bodySmall.copy(color = Color.White)) }
-                    }
-                }
+                StatPill("24", "Restaurants")
+                StatPill("4.5", "Avg Rating")
+                StatPill("8", "Open Now")
             }
         }
     }
