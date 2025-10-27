@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
     <application
         android:allowBackup="true"
@@ -12,15 +11,14 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DineSmart">
 
-        <!-- Add your Google Maps API key here. Replace the value with your actual key. -->
+        <!-- Google Maps API key is provided via manifest placeholder com.google.android.geo.API_KEY -->
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="YOUR_API_KEY" />
+            android:value="${com.google.android.geo.API_KEY}" />
 
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.DineSmart">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

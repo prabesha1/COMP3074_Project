@@ -131,6 +131,9 @@ fun SplashScreen(navController: NavHostController) {
                         OutlinedButton(onClick = { navController.navigate(Routes.MAP) }, colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White), border = ButtonDefaults.outlinedButtonBorder(enabled = true)) {
                             Text("Map")
                         }
+                        OutlinedButton(onClick = { navController.navigate(Routes.ABOUT) }, colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White), border = ButtonDefaults.outlinedButtonBorder(enabled = true), modifier = Modifier.semantics { contentDescription = "Open About" }) {
+                            Text("About")
+                        }
                     }
                 }
 

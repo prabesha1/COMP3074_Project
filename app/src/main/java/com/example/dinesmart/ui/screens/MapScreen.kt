@@ -1,6 +1,7 @@
 package com.example.dinesmart.ui.screens
 
 import android.content.Intent
+import android.content.pm.PackageManager
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,6 +22,12 @@ import com.google.maps.android.compose.MarkerState
 import com.google.maps.android.compose.rememberCameraPositionState
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.material3.CardDefaults
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.fillMaxSize
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -28,6 +35,16 @@ fun MapScreen(navController: NavHostController) {
     val context = LocalContext.current
     val vm: RestaurantViewModel = viewModel(factory = androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory(context.applicationContext as android.app.Application))
     val restaurantsState by vm.restaurants.collectAsState()
+
+    // Read API key from manifest meta-data to show helpful message if missing
+    val apiKey: String? = remember {
+        try {
+            val ai = context.packageManager.getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
+            ai.metaData?.getString("com.google.android.geo.API_KEY")
+        } catch (e: Exception) {
+            null
+        }
+    }
 
     // Collect only restaurants that have coordinates
     val coords = remember(restaurantsState) { restaurantsState.mapNotNull { r -> r.lat?.let { lat -> r.lng?.let { lng -> Pair(r, LatLng(lat, lng) ) } } } }
@@ -53,13 +70,36 @@ fun MapScreen(navController: NavHostController) {
             )
         }
     ) { padding ->
-        Column(Modifier.padding(padding).padding(8.dp)) {
+        Column(Modifier.padding(padding).padding(8.dp).fillMaxSize()) {
+            // If API key is clearly missing or still the placeholder, show an instruction card
+            if (apiKey.isNullOrBlank() || apiKey == "YOUR_API_KEY") {
+                Card(modifier = Modifier.fillMaxWidth(), elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text("Maps not configured", style = MaterialTheme.typography.titleMedium)
+                        Spacer(Modifier.height(8.dp))
+                        Text("The Google Maps API key is missing or not set. To display maps, add your API key to AndroidManifest.xml under the com.google.android.geo.API_KEY meta-data entry.")
+                        Spacer(Modifier.height(8.dp))
+                        Text(
+                            "See Google Maps Android SDK docs",
+                            color = MaterialTheme.colorScheme.primary,
+                            modifier = Modifier.clickable {
+                                val uri = "https://developers.google.com/maps/documentation/android-sdk/get-api-key".toUri()
+                                try { context.startActivity(Intent(Intent.ACTION_VIEW, uri)) } catch (_: Exception) {}
+                            }
+                        )
+                    }
+                }
+            }
+
+            Spacer(Modifier.height(8.dp))
+
             if (coords.isNotEmpty()) {
-                // Show map with markers for restaurants
+                // Show map with markers for restaurants - fill available space
                 GoogleMap(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(420.dp),
+                        .weight(1f)
+                        .semantics { contentDescription = "Restaurant location map" },
                     cameraPositionState = cameraPositionState,
                     properties = MapProperties(isMyLocationEnabled = false)
                 ) {

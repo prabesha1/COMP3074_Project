@@ -1,3 +1,6 @@
+import java.util.Properties
+import java.io.InputStream
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -17,6 +20,28 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        val mapsKey: String? = run {
+            try {
+                val localPropsFile = rootProject.file("local.properties")
+                if (localPropsFile.exists()) {
+                    val props = Properties()
+                    localPropsFile.inputStream().use { stream: InputStream -> props.load(stream) }
+                    props.getProperty("MAPS_API_KEY")
+                } else {
+                    project.findProperty("MAPS_API_KEY") as? String
+                }
+            } catch (_: Exception) {
+                project.findProperty("MAPS_API_KEY") as? String
+            }
+        }
+
+        if (!mapsKey.isNullOrEmpty()) {
+            manifestPlaceholders["com.google.android.geo.API_KEY"] = mapsKey
+        } else {
+            // If not provided, leave placeholder empty so MapScreen can show helpful message
+            manifestPlaceholders["com.google.android.geo.API_KEY"] = ""
+        }
     }
 
     buildTypes {
@@ -53,17 +78,16 @@ dependencies {
     implementation(libs.androidx.compose.ui.graphics)
     implementation(libs.androidx.compose.ui.tooling.preview)
     implementation(libs.androidx.compose.material3)
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.navigation:navigation-compose:2.8.0")
-    implementation("androidx.activity:activity-compose:1.9.2")
-    implementation("com.airbnb.android:lottie-compose:6.1.0")
+    implementation(libs.androidx.compose.material.icons.extended)
+    implementation(libs.androidx.navigation.compose)
+    implementation(libs.com.airbnb.lottie.compose)
     // Room
-    implementation("androidx.room:room-runtime:2.6.1")
-    kapt("androidx.room:room-compiler:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
+    implementation(libs.androidx.room.runtime)
+    kapt(libs.androidx.room.compiler)
+    implementation(libs.androidx.room.ktx)
     // Google Maps Compose and Play Services Maps
-    implementation("com.google.android.gms:play-services-maps:18.1.0")
-    implementation("com.google.maps.android:maps-compose:2.11.0")
+    implementation(libs.com.google.play.services.maps)
+    implementation(libs.com.google.maps.compose)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
