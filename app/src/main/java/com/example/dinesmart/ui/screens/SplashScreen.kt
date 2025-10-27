@@ -14,8 +14,6 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.semantics.semantics
@@ -27,26 +25,25 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavHostController
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.dinesmart.navigation.Routes
 import com.example.dinesmart.R
 import com.example.dinesmart.data.RestaurantViewModel
 import com.example.dinesmart.data.Restaurant
-import androidx.compose.foundation.horizontalScroll
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.Place
-import androidx.compose.material.icons.filled.Restaurant
+import androidx.compose.foundation.shape.CircleShape
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SplashScreen(navController: NavHostController) {
     val vm: RestaurantViewModel = viewModel(factory = androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory(LocalContext.current.applicationContext as android.app.Application))
     val restaurantsState by vm.restaurants.collectAsState()
-    val featured: List<Restaurant> = if (restaurantsState.isNotEmpty()) restaurantsState.take(5) else listOf(
+    val featured: List<Restaurant> = if (restaurantsState.isNotEmpty()) restaurantsState.take(6) else listOf(
         Restaurant(1, "Sushi Place", "Japanese \u2022 Sushi", 4),
         Restaurant(2, "Burger Hub", "Fast Food", 5),
         Restaurant(3, "Spice Garden", "Indian", 3)
@@ -142,7 +139,7 @@ fun SplashScreen(navController: NavHostController) {
                 }
             }
 
-            // Middle content: featured restaurants (horizontal carousel)
+            // Middle content: featured restaurants (vertical list with refined design)
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -155,40 +152,69 @@ fun SplashScreen(navController: NavHostController) {
                 )
                 Spacer(Modifier.height(8.dp))
 
-                // Horizontal carousel: use simple scrolling Row for consistent horizontal behavior
-                val scrollState = rememberScrollState()
-                Row(
+                Surface(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .horizontalScroll(scrollState)
-                        .padding(vertical = 8.dp),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        .heightIn(max = 420.dp)
+                        .padding(bottom = 100.dp), // leave room for bottom stats
+                    shape = RoundedCornerShape(12.dp),
+                    color = Color(0x33FFFFFF)
                 ) {
-                    featured.forEach { item ->
-                        Card(
-                            modifier = Modifier
-                                .width(260.dp)
-                                .height(140.dp),
-                            shape = RoundedCornerShape(12.dp),
-                            colors = CardDefaults.cardColors(containerColor = Color(0x99FFFFFF))
-                        ) {
-                            Column(modifier = Modifier.padding(12.dp)) {
-                                Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
-                                    Text(item.name, style = MaterialTheme.typography.titleMedium, color = Color.Black, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                                    Surface(shape = RoundedCornerShape(16.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
-                                        Row(Modifier.padding(horizontal = 8.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
-                                            Icon(Icons.Default.Star, contentDescription = "rating", tint = MaterialTheme.colorScheme.onSecondaryContainer, modifier = Modifier.size(16.dp))
-                                            Spacer(Modifier.width(6.dp))
-                                            Text("${item.rating}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                    LazyColumn(modifier = Modifier.fillMaxWidth().padding(8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                        items(featured) { item ->
+                            Card(
+                                modifier = Modifier
+                                    .fillMaxWidth(),
+                                shape = RoundedCornerShape(10.dp),
+                                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+                                , elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+                            ) {
+                                Row(Modifier.padding(14.dp), verticalAlignment = Alignment.CenterVertically) {
+                                    // circular avatar with initials
+                                    val initials = item.name.split(' ').mapNotNull { it.firstOrNull()?.toString() }.take(2).joinToString("")
+                                    Surface(
+                                        shape = CircleShape,
+                                        color = MaterialTheme.colorScheme.primaryContainer,
+                                        modifier = Modifier.size(56.dp)
+                                    ) {
+                                        Box(contentAlignment = Alignment.Center) {
+                                            Text(initials, style = MaterialTheme.typography.titleMedium.copy(color = MaterialTheme.colorScheme.onPrimaryContainer))
                                         }
                                     }
-                                }
-                                Spacer(Modifier.height(6.dp))
-                                Text(item.tags, style = MaterialTheme.typography.bodySmall, color = Color.Black, maxLines = 1, overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis)
-                                Spacer(Modifier.weight(1f))
-                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
-                                    Button(onClick = { navController.navigate(Routes.detailsRoute(item.id)) }, colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF3B2DFF))) {
-                                        Text("Open", color = Color.White)
+
+                                    Spacer(Modifier.width(12.dp))
+
+                                    Column(Modifier.weight(1f)) {
+                                        Text(item.name, style = MaterialTheme.typography.titleMedium, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                        Spacer(Modifier.height(4.dp))
+                                        Text(item.tags, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                        Spacer(Modifier.height(8.dp))
+                                        // rating row
+                                        Row(verticalAlignment = Alignment.CenterVertically) {
+                                            Surface(shape = RoundedCornerShape(12.dp), color = MaterialTheme.colorScheme.secondaryContainer) {
+                                                Row(Modifier.padding(horizontal = 8.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically) {
+                                                    Icon(Icons.Default.Star, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSecondaryContainer)
+                                                    Spacer(Modifier.width(6.dp))
+                                                    Text("${item.rating}", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
+                                                }
+                                            }
+                                            Spacer(Modifier.width(8.dp))
+                                            Text("Highly rated", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        }
+                                    }
+
+                                    Spacer(Modifier.width(12.dp))
+
+                                    // compact Open button
+                                    Column(horizontalAlignment = Alignment.End) {
+                                        OutlinedButton(
+                                            onClick = { navController.navigate(Routes.detailsRoute(item.id)) },
+                                            border = ButtonDefaults.outlinedButtonBorder(enabled = true),
+                                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.primary)
+                                        ) {
+                                            Text("Open")
+                                        }
+                                        Spacer(Modifier.height(6.dp))
                                     }
                                 }
                             }
