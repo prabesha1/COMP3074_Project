@@ -12,9 +12,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.DineSmart">
 
-        <!-- Replace YOUR_API_KEY with your Google Maps API key -->
+        <!-- Add your Google Maps API key here. Replace the value with your actual key. -->
         <meta-data
-            android:name="AIzaSyBELXl2Vp59e54U93VwCS60s26x4H20j-k"
+            android:name="com.google.android.geo.API_KEY"
             android:value="YOUR_API_KEY" />
 
         <activity

@@ -1,22 +1,43 @@
 package com.example.dinesmart.ui.screens
 
-import androidx.compose.foundation.Image
+import android.content.Intent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.example.dinesmart.navigation.Routes
-import com.example.dinesmart.R
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.ui.Alignment
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.platform.LocalContext
+import androidx.core.net.toUri
+import com.example.dinesmart.data.RestaurantViewModel
+import com.google.maps.android.compose.GoogleMap
+import com.google.maps.android.compose.MapProperties
+import com.google.maps.android.compose.Marker
+import com.google.maps.android.compose.MarkerState
+import com.google.maps.android.compose.rememberCameraPositionState
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MapScreen(navController: NavHostController) {
+    val context = LocalContext.current
+    val vm: RestaurantViewModel = viewModel(factory = androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory(context.applicationContext as android.app.Application))
+    val restaurantsState by vm.restaurants.collectAsState()
+
+    // Collect only restaurants that have coordinates
+    val coords = remember(restaurantsState) { restaurantsState.mapNotNull { r -> r.lat?.let { lat -> r.lng?.let { lng -> Pair(r, LatLng(lat, lng) ) } } } }
+
+    // Choose initial camera: first restaurant with coords or default coordinate (0,0)
+    val initialLatLng = coords.firstOrNull()?.second ?: LatLng(0.0, 0.0)
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(initialLatLng, if (coords.isNotEmpty()) 12f else 2f)
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -24,25 +45,56 @@ fun MapScreen(navController: NavHostController) {
                 navigationIcon = {
                     if (navController.previousBackStackEntry != null) {
                         IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                            @Suppress("DEPRECATION")
+                            Icon(Icons.Filled.ArrowBack, contentDescription = "Back")
                         }
                     }
                 }
             )
         }
     ) { padding ->
-        Column(Modifier.padding(padding).padding(16.dp)) {
-            Text("Google Map (placeholder)", style = MaterialTheme.typography.bodyLarge)
-            Spacer(Modifier.height(16.dp))
-            Image(
-                painter = painterResource(id = android.R.drawable.ic_dialog_map),
-                contentDescription = "Map placeholder",
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(240.dp)
-            )
-            Spacer(Modifier.height(16.dp))
-            Text("Tap on a marker to get directions.", style = MaterialTheme.typography.bodySmall)
+        Column(Modifier.padding(padding).padding(8.dp)) {
+            if (coords.isNotEmpty()) {
+                // Show map with markers for restaurants
+                GoogleMap(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(420.dp),
+                    cameraPositionState = cameraPositionState,
+                    properties = MapProperties(isMyLocationEnabled = false)
+                ) {
+                    coords.forEach { (restaurant, latLng) ->
+                        Marker(state = MarkerState(position = latLng), title = restaurant.name)
+                    }
+                }
+
+                Spacer(Modifier.height(12.dp))
+                Text("Tap a marker to open it in Maps.", style = MaterialTheme.typography.bodySmall)
+                Spacer(Modifier.height(8.dp))
+                Button(onClick = {
+                    // open external maps centered on first coord
+                    val first = coords.firstOrNull()
+                    first?.let { (_, latLng) ->
+                        val uri = "geo:${latLng.latitude},${latLng.longitude}".toUri()
+                        val intent = Intent(Intent.ACTION_VIEW, uri)
+                        intent.setPackage("com.google.android.apps.maps")
+                        try {
+                            context.startActivity(intent)
+                        } catch (_: Exception) {
+                            // fallback to browser
+                            val web = "https://www.google.com/maps/search/?api=1&query=${latLng.latitude},${latLng.longitude}".toUri()
+                            try { context.startActivity(Intent(Intent.ACTION_VIEW, web)) } catch (_: Exception) { }
+                        }
+                    }
+                }) {
+                    Text("Open first location in Maps")
+                }
+            } else {
+                // No coordinates available: show helpful message and fallback
+                Box(Modifier.fillMaxWidth().height(240.dp), contentAlignment = Alignment.Center) {
+                    Text("No mapped restaurants available. Add coordinates to restaurants to see them on the map.")
+                }
+            }
         }
     }
 }
