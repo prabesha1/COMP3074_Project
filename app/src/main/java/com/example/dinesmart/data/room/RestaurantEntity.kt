@@ -1,5 +1,6 @@
 package com.example.dinesmart.data.room
 
+import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
@@ -12,6 +13,6 @@ data class RestaurantEntity(
     val address: String,
     val phone: String,
     val lat: Double?,
-    val lng: Double?
+    val lng: Double?,
+    @ColumnInfo(name = "image") val image: String?
 )
-

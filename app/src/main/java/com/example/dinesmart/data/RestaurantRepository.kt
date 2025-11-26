@@ -29,6 +29,7 @@ class RestaurantRepository(private val context: Context) {
                         val list = mutableListOf<RestaurantEntity>()
                         for (i in 0 until arr.length()) {
                             val obj = arr.getJSONObject(i)
+                            val image = obj.optString("image").takeIf { it.isNotBlank() }
                             val entity = RestaurantEntity(
                                 id = obj.optInt("id", i),
                                 name = obj.optString("name", "Unnamed"),
@@ -36,8 +37,9 @@ class RestaurantRepository(private val context: Context) {
                                 rating = obj.optInt("rating", 0),
                                 address = obj.optString("address", ""),
                                 phone = obj.optString("phone", ""),
-                                lat = if (obj.has("lat")) obj.optDouble("lat") else null,
-                                lng = if (obj.has("lng")) obj.optDouble("lng") else null
+                                lat = obj.optDouble("lat", Double.NaN).takeIf { !it.isNaN() },
+                                lng = obj.optDouble("lng", Double.NaN).takeIf { !it.isNaN() },
+                                image = image
                             )
                             list.add(entity)
                         }
@@ -53,7 +55,19 @@ class RestaurantRepository(private val context: Context) {
         try {
             val dao = db.restaurantDao()
             val entities = dao.getAll()
-            val mapped = entities.map { e -> Restaurant(e.id, e.name, e.tags, e.rating, e.address, e.phone, e.lat, e.lng) }
+            val mapped = entities.map { e ->
+                Restaurant(
+                    e.id,
+                    e.name,
+                    e.tags,
+                    e.rating,
+                    e.address,
+                    e.phone,
+                    e.lat,
+                    e.lng,
+                    e.image
+                )
+            }
             emit(mapped)
         } catch (e: Exception) {
             emit(emptyList())
@@ -62,7 +76,22 @@ class RestaurantRepository(private val context: Context) {
 
     suspend fun getById(id: Int): Restaurant? = withContext(Dispatchers.IO) {
         val entity = db.restaurantDao().getById(id)
-        entity?.let { Restaurant(it.id, it.name, it.tags, it.rating, it.address, it.phone, it.lat, it.lng) }
+        entity?.let { Restaurant(it.id, it.name, it.tags, it.rating, it.address, it.phone, it.lat, it.lng, it.image) }
+    }
+
+    suspend fun insert(restaurant: Restaurant) = withContext(Dispatchers.IO) {
+        val entity = RestaurantEntity(
+            id = restaurant.id,
+            name = restaurant.name,
+            tags = restaurant.tags,
+            rating = restaurant.rating,
+            address = restaurant.address,
+            phone = restaurant.phone,
+            lat = restaurant.lat,
+            lng = restaurant.lng,
+            image = restaurant.image
+        )
+        db.restaurantDao().insert(entity)
     }
 
 }
