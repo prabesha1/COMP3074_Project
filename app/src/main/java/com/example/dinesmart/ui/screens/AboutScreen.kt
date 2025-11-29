@@ -14,12 +14,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material.icons.filled.Email
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.OpenInBrowser
-import androidx.compose.material.icons.filled.Share
-import androidx.compose.material.icons.filled.Star
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.rounded.*
 import androidx.navigation.NavHostController
 import androidx.compose.ui.Alignment
@@ -127,7 +122,7 @@ fun AboutScreen(navController: NavHostController) {
                             navigationIcon = {
                                 if (navController.previousBackStackEntry != null) {
                                     IconButton(onClick = { navController.popBackStack() }) {
-                                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                                     }
                                 }
                             },

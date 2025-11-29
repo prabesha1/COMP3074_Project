@@ -16,7 +16,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.ui.Alignment
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -140,7 +140,7 @@ fun MapScreen(navController: NavHostController) {
                             navigationIcon = {
                                 if (navController.previousBackStackEntry != null) {
                                     IconButton(onClick = { navController.popBackStack() }) {
-                                        Icon(Icons.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
+                                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back", tint = Color.White)
                                     }
                                 }
                             },

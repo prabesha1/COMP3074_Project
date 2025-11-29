@@ -10,7 +10,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Star
-import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -179,11 +179,11 @@ fun RestaurantListScreen(navController: NavHostController) {
                                 )
                             },
                             navigationIcon = {
-                                if (navController.previousBackStackEntry != null) {
-                                    IconButton(onClick = { navController.popBackStack() }) {
-                                        Icon(Icons.Filled.ArrowBack, contentDescription = "Navigate back", tint = Color.White)
-                                    }
+                            if (navController.previousBackStackEntry != null) {
+                                IconButton(onClick = { navController.popBackStack() }) {
+                                    Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Navigate back", tint = Color.White)
                                 }
+                            }
                             },
                             actions = {
                                 IconButton(onClick = { showFilters = !showFilters }) {
