@@ -188,9 +188,7 @@ fun RestaurantDetailScreen(navController: NavHostController, restaurantId: Int?)
                                     .build(),
                                 contentDescription = "${r.name} image",
                                 contentScale = ContentScale.Crop,
-                                modifier = Modifier.fillMaxSize(),
-                                placeholder = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_menu_gallery),
-                                error = androidx.compose.ui.res.painterResource(id = android.R.drawable.ic_menu_gallery)
+                                modifier = Modifier.fillMaxSize()
                             )
 
                             // Gradient overlay

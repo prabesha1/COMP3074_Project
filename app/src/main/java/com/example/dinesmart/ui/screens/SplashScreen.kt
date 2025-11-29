@@ -362,9 +362,7 @@ private fun GlassRestaurantCard(
                             .build(),
                         contentDescription = restaurant.name,
                         contentScale = ContentScale.Crop,
-                        modifier = Modifier.fillMaxSize(),
-                        placeholder = painterResource(android.R.drawable.ic_menu_gallery),
-                        error = painterResource(android.R.drawable.ic_menu_gallery)
+                        modifier = Modifier.fillMaxSize()
                     )
 
                     // Dark gradient overlay
