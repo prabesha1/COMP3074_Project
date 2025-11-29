@@ -187,7 +187,6 @@ fun ReviewsSection(
             }
         }
 
-        // Reviews List
         if (reviews.isEmpty()) {
             GlassCard(
                 modifier = Modifier.fillMaxWidth(),

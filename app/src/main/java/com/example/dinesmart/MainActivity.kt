@@ -12,12 +12,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // Apply the app theme (supports dynamic colors on Android 12+)
             DineSmartTheme {
-                // Create a NavController instance
                 val navController = rememberNavController()
 
-                // Set up the app's navigation graph within a Surface
                 Surface(color = androidx.compose.material3.MaterialTheme.colorScheme.background) {
                     NavGraph(navController)
                 }

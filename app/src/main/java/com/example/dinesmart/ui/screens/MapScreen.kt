@@ -94,7 +94,6 @@ fun MapScreen(navController: NavHostController) {
                 )
         )
 
-        // Floating orbs
         FloatingGradientOrb(
             color = LiquidPink,
             size = 280.dp,
@@ -245,7 +244,6 @@ fun MapScreen(navController: NavHostController) {
                         }
                     }
 
-                    // Info Card
                     GlassCard(
                         modifier = Modifier.fillMaxWidth(),
                         cornerRadius = 24.dp,
@@ -314,7 +312,6 @@ fun MapScreen(navController: NavHostController) {
                         isPrimary = true
                     )
                 } else {
-                    // No Locations Available
                     Box(
                         Modifier
                             .fillMaxWidth()

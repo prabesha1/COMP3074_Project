@@ -100,7 +100,6 @@ val Typography = Typography(
         letterSpacing = 0.4.sp
     ),
 
-    // Label styles
     labelLarge = TextStyle(
         fontFamily = FontFamily.Default,
         fontWeight = FontWeight.Medium,

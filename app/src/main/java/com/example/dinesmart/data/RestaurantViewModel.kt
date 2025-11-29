@@ -186,7 +186,6 @@ class RestaurantViewModel(application: Application) : AndroidViewModel(applicati
         viewModelScope.launch {
             reviewRepo.deleteReview(review)
 
-            // Reload reviews
             _selected.value?.let { loadReviews(it.id) }
         }
     }

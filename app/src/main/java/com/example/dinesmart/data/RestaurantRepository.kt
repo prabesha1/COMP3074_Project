@@ -10,18 +10,15 @@ import com.example.dinesmart.data.room.AppDatabase
 import com.example.dinesmart.data.room.RestaurantEntity
 import kotlinx.coroutines.withContext
 
-// Repository backed by Room. On first read, it will seed the DB from assets if empty.
 class RestaurantRepository(private val context: Context) {
 
     private val db by lazy { AppDatabase.getInstance(context) }
 
     fun getRestaurants(): Flow<List<Restaurant>> = flow {
-        // Ensure DB seeded
         withContext(Dispatchers.IO) {
             val dao = db.restaurantDao()
             val existing = dao.getAll()
             if (existing.isEmpty()) {
-                // attempt to seed from assets
                 val json = try { context.assets.open("restaurants.json").bufferedReader().use { it.readText() } } catch (e: Exception) { null }
                 if (json != null) {
                     try {
@@ -45,13 +42,11 @@ class RestaurantRepository(private val context: Context) {
                         }
                         if (list.isNotEmpty()) dao.insertAll(list)
                     } catch (e: Exception) {
-                        // ignore
                     }
                 }
             }
         }
 
-        // Emit DB contents
         try {
             val dao = db.restaurantDao()
             val entities = dao.getAll()

@@ -59,8 +59,7 @@ private val LightColorScheme = lightColorScheme(
 @Composable
 fun DineSmartTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = false, // Disabled to use our custom liquid glass theme
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = when {

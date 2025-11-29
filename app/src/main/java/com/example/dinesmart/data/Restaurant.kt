@@ -1,6 +1,5 @@
 package com.example.dinesmart.data
 
-// Simple restaurant model used across the app
 data class Restaurant(
     val id: Int,
     val name: String,

@@ -11,7 +11,6 @@ data class Review(
     val firebaseId: String? = null
 )
 
-// Extension functions to convert between entities
 fun Review.toEntity() = com.example.dinesmart.data.room.ReviewEntity(
     id = id,
     restaurantId = restaurantId,

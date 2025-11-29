@@ -27,7 +27,6 @@ val AccentPurple = Color(0xFFBF5AF2)
 val AccentGreen = Color(0xFF32D74B)
 val AccentYellow = Color(0xFFFFD60A)
 
-// Gradients
 val GradientStart = Color(0xFF667EEA)
 val GradientMiddle = Color(0xFF764BA2)
 val GradientEnd = Color(0xFFF093FB)

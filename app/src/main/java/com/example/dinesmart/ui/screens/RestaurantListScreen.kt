@@ -44,7 +44,6 @@ import com.example.dinesmart.ui.components.*
 import com.example.dinesmart.ui.theme.*
 import androidx.compose.foundation.layout.FlowRow
 
-// Helper function to get default images
 private fun getDefaultRestaurantImage(id: Long): String {
     val images = listOf(
         "https://images.unsplash.com/photo-1546069901-ba9599a7e63c",

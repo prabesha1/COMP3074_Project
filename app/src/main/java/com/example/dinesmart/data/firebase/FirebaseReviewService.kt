@@ -74,7 +74,6 @@ class FirebaseReviewService {
         }
     }
 
-    // Get average rating for a restaurant
     suspend fun getAverageRating(restaurantId: Int): Float {
         return try {
             val snapshot = reviewsCollection
