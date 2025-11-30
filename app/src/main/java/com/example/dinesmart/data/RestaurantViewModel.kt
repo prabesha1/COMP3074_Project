@@ -189,4 +189,16 @@ class RestaurantViewModel(application: Application) : AndroidViewModel(applicati
             _selected.value?.let { loadReviews(it.id) }
         }
     }
+
+    fun loadSampleRestaurants() {
+        viewModelScope.launch {
+            repo.loadSampleRestaurants()
+        }
+    }
+
+    fun deleteAllRestaurants() {
+        viewModelScope.launch {
+            repo.deleteAll()
+        }
+    }
 }

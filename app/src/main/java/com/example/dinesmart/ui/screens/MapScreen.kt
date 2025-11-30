@@ -1,10 +1,12 @@
 package com.example.dinesmart.ui.screens
 
+import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.core.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.*
@@ -17,21 +19,23 @@ import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.rounded.*
 import androidx.compose.ui.Alignment
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.compose.ui.platform.LocalContext
+import androidx.core.content.ContextCompat
 import androidx.core.net.toUri
+import com.example.dinesmart.data.Restaurant
 import com.example.dinesmart.data.RestaurantViewModel
-import com.google.maps.android.compose.GoogleMap
-import com.google.maps.android.compose.MapProperties
-import com.google.maps.android.compose.Marker
-import com.google.maps.android.compose.MarkerState
-import com.google.maps.android.compose.rememberCameraPositionState
+import com.example.dinesmart.navigation.Routes
+import com.google.maps.android.compose.*
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.text.style.TextOverflow
 import com.example.dinesmart.ui.components.*
 import com.example.dinesmart.ui.theme.*
 
@@ -42,7 +46,24 @@ fun MapScreen(navController: NavHostController) {
     val vm: RestaurantViewModel = viewModel(factory = androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory(context.applicationContext as android.app.Application))
     val restaurantsState by vm.restaurants.collectAsState()
 
-    // Animated gradient
+    var hasLocationPermission by remember {
+        mutableStateOf(
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED
+        )
+    }
+
+    val permissionLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.RequestMultiplePermissions()
+    ) { permissions ->
+        hasLocationPermission = permissions[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+                permissions[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+    }
+
+    var selectedRestaurant by remember { mutableStateOf<Restaurant?>(null) }
+
     val infiniteTransition = rememberInfiniteTransition(label = "gradient")
     val gradientOffset by infiniteTransition.animateFloat(
         initialValue = 0f,
@@ -54,7 +75,6 @@ fun MapScreen(navController: NavHostController) {
         label = "gradient"
     )
 
-    // Read API key from manifest meta-data
     val apiKey: String? = remember {
         try {
             val ai = context.packageManager.getApplicationInfo(context.packageName, PackageManager.GET_META_DATA)
@@ -64,32 +84,24 @@ fun MapScreen(navController: NavHostController) {
         }
     }
 
-    // Collect restaurants with coordinates
     val coords = remember(restaurantsState) {
         restaurantsState.mapNotNull { r ->
             r.lat?.let { lat -> r.lng?.let { lng -> Pair(r, LatLng(lat, lng)) } }
         }
     }
 
-    val initialLatLng = coords.firstOrNull()?.second ?: LatLng(43.6532, -79.3832) // Toronto default
+    val initialLatLng = coords.firstOrNull()?.second ?: LatLng(43.6532, -79.3832)
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(initialLatLng, if (coords.isNotEmpty()) 12f else 10f)
     }
 
-    Box(
-        modifier = Modifier.fillMaxSize()
-    ) {
-        // Liquid gradient background
+    Box(modifier = Modifier.fillMaxSize()) {
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .background(
                     Brush.verticalGradient(
-                        colors = listOf(
-                            GradientStart,
-                            GradientMiddle,
-                            GradientEnd
-                        )
+                        colors = listOf(GradientStart, GradientMiddle, GradientEnd)
                     )
                 )
         )
@@ -120,10 +132,7 @@ fun MapScreen(navController: NavHostController) {
                     Box(
                         modifier = Modifier.background(
                             Brush.verticalGradient(
-                                colors = listOf(
-                                    Color.White.copy(alpha = 0.15f),
-                                    Color.Transparent
-                                )
+                                colors = listOf(Color.White.copy(alpha = 0.15f), Color.Transparent)
                             )
                         )
                     ) {
@@ -144,150 +153,110 @@ fun MapScreen(navController: NavHostController) {
                                     }
                                 }
                             },
-                            colors = TopAppBarDefaults.topAppBarColors(
-                                containerColor = Color.Transparent
-                            )
+                            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent)
                         )
                     }
                 }
             }
         ) { padding ->
             Column(
-                Modifier
-                    .fillMaxSize()
-                    .padding(padding)
-                    .padding(20.dp),
+                Modifier.fillMaxSize().padding(padding).padding(20.dp),
                 verticalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                // API Key Missing Warning
-                if (apiKey.isNullOrBlank() || apiKey == "YOUR_API_KEY") {
-                    GlassCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        cornerRadius = 24.dp,
-                        glassAlpha = 0.2f
-                    ) {
-                        Row(
-                            modifier = Modifier.padding(20.dp),
-                            horizontalArrangement = Arrangement.spacedBy(16.dp),
-                            verticalAlignment = Alignment.Top
-                        ) {
-                            Icon(
-                                Icons.Rounded.Warning,
-                                contentDescription = null,
-                                tint = AccentYellow,
-                                modifier = Modifier.size(28.dp)
-                            )
-                            Column(
-                                verticalArrangement = Arrangement.spacedBy(8.dp)
-                            ) {
-                                Text(
-                                    "Maps Not Configured",
-                                    style = MaterialTheme.typography.titleMedium.copy(
-                                        color = Color.White,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                )
-                                Text(
-                                    "The Google Maps API key is missing. Add your API key to AndroidManifest.xml to display maps.",
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        color = Color.White.copy(alpha = 0.9f)
-                                    )
-                                )
-                                Surface(
-                                    onClick = {
-                                        val uri = "https://developers.google.com/maps/documentation/android-sdk/get-api-key".toUri()
-                                        try {
-                                            context.startActivity(Intent(Intent.ACTION_VIEW, uri))
-                                        } catch (_: Exception) {
-                                        }
-                                    },
-                                    modifier = Modifier.padding(top = 4.dp),
-                                    shape = RoundedCornerShape(12.dp),
-                                    color = Color.White.copy(alpha = 0.25f)
-                                ) {
-                                    Text(
-                                        "Get API Key →",
-                                        modifier = Modifier.padding(horizontal = 12.dp, vertical = 8.dp),
-                                        style = MaterialTheme.typography.labelLarge.copy(
-                                            color = Color.White,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    )
-                                }
+                if (apiKey.isNullOrBlank()) {
+                    GlassCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 24.dp, glassAlpha = 0.2f) {
+                        Row(modifier = Modifier.padding(20.dp), horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.Top) {
+                            Icon(Icons.Rounded.Warning, contentDescription = null, tint = AccentYellow, modifier = Modifier.size(28.dp))
+                            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Text("Maps Not Configured", style = MaterialTheme.typography.titleMedium.copy(color = Color.White, fontWeight = FontWeight.Bold))
+                                Text("Add MAPS_API_KEY to local.properties", style = MaterialTheme.typography.bodyMedium.copy(color = Color.White.copy(alpha = 0.9f)))
                             }
                         }
                     }
                 }
 
                 if (coords.isNotEmpty()) {
-                    // Map Card with Glass Effect
+                    if (!hasLocationPermission) {
+                        GlassCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 20.dp, glassAlpha = 0.2f) {
+                            Row(modifier = Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Rounded.LocationOn, contentDescription = null, tint = Color.White, modifier = Modifier.size(24.dp))
+                                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Text("Location Permission", style = MaterialTheme.typography.titleSmall.copy(color = Color.White, fontWeight = FontWeight.Bold))
+                                    Text("Enable to show your location", style = MaterialTheme.typography.bodySmall.copy(color = Color.White.copy(alpha = 0.85f)))
+                                }
+                                Surface(
+                                    onClick = { permissionLauncher.launch(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)) },
+                                    shape = RoundedCornerShape(12.dp),
+                                    color = Color.White.copy(alpha = 0.3f)
+                                ) {
+                                    Text("Enable", modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp), style = MaterialTheme.typography.labelMedium.copy(color = Color.White, fontWeight = FontWeight.Bold))
+                                }
+                            }
+                        }
+                    }
+
                     GlassCard(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .weight(1f)
-                            .semantics { contentDescription = "Restaurant location map" },
+                        modifier = Modifier.fillMaxWidth().weight(1f).semantics { contentDescription = "Restaurant location map" },
                         cornerRadius = 28.dp,
                         glassAlpha = 0.18f
                     ) {
                         GoogleMap(
                             modifier = Modifier.fillMaxSize(),
                             cameraPositionState = cameraPositionState,
-                            properties = MapProperties(isMyLocationEnabled = false)
+                            properties = MapProperties(isMyLocationEnabled = hasLocationPermission, isTrafficEnabled = false, isBuildingEnabled = true),
+                            uiSettings = MapUiSettings(zoomControlsEnabled = true, myLocationButtonEnabled = hasLocationPermission, compassEnabled = true, mapToolbarEnabled = true)
                         ) {
                             coords.forEach { (restaurant, latLng) ->
                                 Marker(
                                     state = MarkerState(position = latLng),
                                     title = restaurant.name,
-                                    snippet = restaurant.tags
+                                    snippet = "${restaurant.tags} • ${restaurant.rating}⭐",
+                                    onClick = { selectedRestaurant = restaurant; true },
+                                    icon = BitmapDescriptorFactory.defaultMarker(
+                                        when (restaurant.rating) {
+                                            5 -> BitmapDescriptorFactory.HUE_GREEN
+                                            4 -> BitmapDescriptorFactory.HUE_AZURE
+                                            3 -> BitmapDescriptorFactory.HUE_ORANGE
+                                            else -> BitmapDescriptorFactory.HUE_RED
+                                        }
+                                    )
                                 )
                             }
                         }
                     }
 
-                    GlassCard(
-                        modifier = Modifier.fillMaxWidth(),
-                        cornerRadius = 24.dp,
-                        glassAlpha = 0.18f
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(20.dp),
-                            verticalArrangement = Arrangement.spacedBy(12.dp)
+                    selectedRestaurant?.let { restaurant ->
+                        GlassCard(
+                            modifier = Modifier.fillMaxWidth(),
+                            onClick = { navController.navigate(Routes.detailsRoute(restaurant.id)) },
+                            cornerRadius = 24.dp,
+                            glassAlpha = 0.2f
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Row(
-                                    horizontalArrangement = Arrangement.spacedBy(12.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Icon(
-                                        Icons.Rounded.LocationOn,
-                                        contentDescription = null,
-                                        tint = Color.White,
-                                        modifier = Modifier.size(24.dp)
-                                    )
-                                    Text(
-                                        "${coords.size} Location${if (coords.size != 1) "s" else ""}",
-                                        style = MaterialTheme.typography.titleMedium.copy(
-                                            color = Color.White,
-                                            fontWeight = FontWeight.Bold
-                                        )
-                                    )
+                            Row(modifier = Modifier.padding(20.dp), horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                                    Text(restaurant.name, style = MaterialTheme.typography.titleMedium.copy(color = Color.White, fontWeight = FontWeight.Bold), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    Row(horizontalArrangement = Arrangement.spacedBy(4.dp), verticalAlignment = Alignment.CenterVertically) {
+                                        Icon(Icons.Filled.Star, contentDescription = null, tint = AccentYellow, modifier = Modifier.size(16.dp))
+                                        Text("${restaurant.rating}.0", style = MaterialTheme.typography.bodyMedium.copy(color = Color.White.copy(alpha = 0.9f)))
+                                        Text(" • ${restaurant.tags}", style = MaterialTheme.typography.bodyMedium.copy(color = Color.White.copy(alpha = 0.8f)), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                                    }
+                                    Text(restaurant.address, style = MaterialTheme.typography.bodySmall.copy(color = Color.White.copy(alpha = 0.75f)), maxLines = 1, overflow = TextOverflow.Ellipsis)
                                 }
+                                Icon(Icons.Rounded.ChevronRight, contentDescription = "View details", tint = Color.White.copy(alpha = 0.7f), modifier = Modifier.size(24.dp))
                             }
-
-                            Text(
-                                "Tap a marker for details or use the button below to open in Google Maps",
-                                style = MaterialTheme.typography.bodyMedium.copy(
-                                    color = Color.White.copy(alpha = 0.9f)
-                                )
-                            )
                         }
                     }
 
-                    // Open in Maps Button
+                    GlassCard(modifier = Modifier.fillMaxWidth(), cornerRadius = 24.dp, glassAlpha = 0.18f) {
+                        Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                            Row(horizontalArrangement = Arrangement.spacedBy(12.dp), verticalAlignment = Alignment.CenterVertically) {
+                                Icon(Icons.Rounded.LocationOn, contentDescription = null, tint = Color.White, modifier = Modifier.size(24.dp))
+                                Text("${coords.size} Location${if (coords.size != 1) "s" else ""}", style = MaterialTheme.typography.titleMedium.copy(color = Color.White, fontWeight = FontWeight.Bold))
+                            }
+                            Text("Tap a marker to see details • Tap card to view restaurant", style = MaterialTheme.typography.bodyMedium.copy(color = Color.White.copy(alpha = 0.9f)))
+                        }
+                    }
+
                     GlassButton(
                         text = "Open in Google Maps",
                         icon = Icons.Rounded.Map,
@@ -301,10 +270,7 @@ fun MapScreen(navController: NavHostController) {
                                     context.startActivity(intent)
                                 } catch (_: Exception) {
                                     val web = "https://www.google.com/maps/search/?api=1&query=${latLng.latitude},${latLng.longitude}".toUri()
-                                    try {
-                                        context.startActivity(Intent(Intent.ACTION_VIEW, web))
-                                    } catch (_: Exception) {
-                                    }
+                                    try { context.startActivity(Intent(Intent.ACTION_VIEW, web)) } catch (_: Exception) {}
                                 }
                             }
                         },
@@ -312,42 +278,12 @@ fun MapScreen(navController: NavHostController) {
                         isPrimary = true
                     )
                 } else {
-                    Box(
-                        Modifier
-                            .fillMaxWidth()
-                            .weight(1f),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        GlassCard(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(24.dp),
-                            glassAlpha = 0.25f
-                        ) {
-                            Column(
-                                modifier = Modifier.padding(32.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally,
-                                verticalArrangement = Arrangement.spacedBy(16.dp)
-                            ) {
-                                Icon(
-                                    Icons.Rounded.LocationOff,
-                                    contentDescription = null,
-                                    tint = Color.White.copy(alpha = 0.8f),
-                                    modifier = Modifier.size(64.dp)
-                                )
-                                Text(
-                                    "No Locations Available",
-                                    style = MaterialTheme.typography.titleLarge.copy(
-                                        color = Color.White,
-                                        fontWeight = FontWeight.Bold
-                                    )
-                                )
-                                Text(
-                                    "Add coordinates to restaurants to see them on the map",
-                                    style = MaterialTheme.typography.bodyMedium.copy(
-                                        color = Color.White.copy(alpha = 0.9f)
-                                    )
-                                )
+                    Box(Modifier.fillMaxWidth().weight(1f), contentAlignment = Alignment.Center) {
+                        GlassCard(modifier = Modifier.fillMaxWidth().padding(24.dp), glassAlpha = 0.25f) {
+                            Column(modifier = Modifier.padding(32.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(16.dp)) {
+                                Icon(Icons.Rounded.LocationOff, contentDescription = null, tint = Color.White.copy(alpha = 0.8f), modifier = Modifier.size(64.dp))
+                                Text("No Locations Available", style = MaterialTheme.typography.titleLarge.copy(color = Color.White, fontWeight = FontWeight.Bold))
+                                Text("Add coordinates to restaurants to see them on the map", style = MaterialTheme.typography.bodyMedium.copy(color = Color.White.copy(alpha = 0.9f)))
                             }
                         }
                     }
@@ -356,3 +292,4 @@ fun MapScreen(navController: NavHostController) {
         }
     }
 }
+

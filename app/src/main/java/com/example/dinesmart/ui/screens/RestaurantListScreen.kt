@@ -33,11 +33,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.draw.blur
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.dinesmart.ui.components.*
@@ -61,7 +60,8 @@ private fun getDefaultRestaurantImage(id: Long): String {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RestaurantListScreen(navController: NavHostController) {
-    val vm: RestaurantViewModel = viewModel(factory = androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory(LocalContext.current.applicationContext as android.app.Application))
+    val context = LocalContext.current
+    val vm: RestaurantViewModel = viewModel(factory = androidx.lifecycle.ViewModelProvider.AndroidViewModelFactory(context.applicationContext as android.app.Application))
     val restaurantsState by vm.restaurants.collectAsState()
     val filteredRestaurants by vm.filteredRestaurants.collectAsState()
     val searchQuery by vm.searchQuery.collectAsState()
@@ -69,6 +69,7 @@ fun RestaurantListScreen(navController: NavHostController) {
     val minRating by vm.minRatingFilter.collectAsState()
 
     var showFilters by remember { mutableStateOf(false) }
+    var showMenu by remember { mutableStateOf(false) }
     val cuisines = remember(restaurantsState) { vm.getAllCuisines() }
 
     val restaurants = if (searchQuery.isNotEmpty() || selectedCuisine != null || minRating > 0) {
@@ -80,20 +81,12 @@ fun RestaurantListScreen(navController: NavHostController) {
             }
         }
     } else {
-        if (restaurantsState.isNotEmpty()) {
-            restaurantsState.map { restaurant ->
-                if (restaurant.image.isNullOrEmpty()) {
-                    restaurant.copy(image = getDefaultRestaurantImage(restaurant.id.toLong()))
-                } else {
-                    restaurant
-                }
+        restaurantsState.map { restaurant ->
+            if (restaurant.image.isNullOrEmpty()) {
+                restaurant.copy(image = getDefaultRestaurantImage(restaurant.id.toLong()))
+            } else {
+                restaurant
             }
-        } else {
-            listOf(
-                Restaurant(1, "Sushi Place", "Japanese, Sushi", 4, address = "123 Ocean Ave, Vancouver, BC", phone = "+1-604-555-0100", image = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c"),
-                Restaurant(2, "Burger Hub", "Fast Food", 5, address = "45 King St W, Toronto, ON", phone = "+1-416-555-0123", image = "https://images.unsplash.com/photo-1550547660-d9450f859349"),
-                Restaurant(3, "Spice Garden", "Indian Cuisine", 3, address = "88 Queen St, Ottawa, ON", phone = "+1-613-555-0145", image = "https://images.unsplash.com/photo-1512058564366-18510be2db19")
-            )
         }
     }
 
@@ -193,6 +186,50 @@ fun RestaurantListScreen(navController: NavHostController) {
                                         tint = Color.White
                                     )
                                 }
+                                Box {
+                                    IconButton(onClick = { showMenu = !showMenu }) {
+                                        Icon(
+                                            Icons.Rounded.MoreVert,
+                                            contentDescription = "More options",
+                                            tint = Color.White
+                                        )
+                                    }
+                                    DropdownMenu(
+                                        expanded = showMenu,
+                                        onDismissRequest = { showMenu = false }
+                                    ) {
+                                        DropdownMenuItem(
+                                            text = { Text("Show all Restaurants") },
+                                            onClick = {
+                                                vm.loadSampleRestaurants()
+                                                android.widget.Toast.makeText(
+                                                    context,
+                                                    "Loading all restaurants...",
+                                                    android.widget.Toast.LENGTH_SHORT
+                                                ).show()
+                                                showMenu = false
+                                            },
+                                            leadingIcon = {
+                                                Icon(Icons.Rounded.Restaurant, contentDescription = null)
+                                            }
+                                        )
+                                        DropdownMenuItem(
+                                            text = { Text("Clear All Restaurants") },
+                                            onClick = {
+                                                vm.deleteAllRestaurants()
+                                                android.widget.Toast.makeText(
+                                                    context,
+                                                    "Cleared all restaurants",
+                                                    android.widget.Toast.LENGTH_SHORT
+                                                ).show()
+                                                showMenu = false
+                                            },
+                                            leadingIcon = {
+                                                Icon(Icons.Rounded.DeleteSweep, contentDescription = null)
+                                            }
+                                        )
+                                    }
+                                }
                             },
                             colors = TopAppBarDefaults.topAppBarColors(
                                 containerColor = Color.Transparent,
@@ -210,21 +247,7 @@ fun RestaurantListScreen(navController: NavHostController) {
                     shape = RoundedCornerShape(18.dp),
                     elevation = FloatingActionButtonDefaults.elevation(8.dp)
                 ) {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .background(
-                                Brush.linearGradient(
-                                    colors = listOf(
-                                        Color.White.copy(alpha = 0.3f),
-                                        Color.White.copy(alpha = 0.1f)
-                                    )
-                                )
-                            ),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Icon(Icons.Default.Add, contentDescription = "Add Restaurant", tint = Color.White)
-                    }
+                    Icon(Icons.Default.Add, contentDescription = "Add Restaurant", tint = Color.White)
                 }
             }
         ) { padding ->
@@ -264,6 +287,23 @@ fun RestaurantListScreen(navController: NavHostController) {
                                 style = MaterialTheme.typography.bodyMedium.copy(
                                     color = Color.White.copy(alpha = 0.9f)
                                 )
+                            )
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            GlassButton(
+                                text = "Show all Restaurants",
+                                onClick = {
+                                    vm.loadSampleRestaurants()
+                                    android.widget.Toast.makeText(
+                                        context,
+                                        "Loading all restaurants...",
+                                        android.widget.Toast.LENGTH_SHORT
+                                    ).show()
+                                },
+                                icon = Icons.Rounded.Restaurant,
+                                isPrimary = true,
+                                modifier = Modifier.fillMaxWidth()
                             )
                         }
                     }
@@ -388,7 +428,7 @@ private fun LiquidGlassRestaurantCard(
             )
             .semantics { contentDescription = "Restaurant card: ${restaurant.name}" },
         shape = RoundedCornerShape(32.dp),
-        color = Color.White.copy(alpha = 0.15f)
+        color = Color.Transparent
     ) {
         Box(
             modifier = Modifier
@@ -396,8 +436,8 @@ private fun LiquidGlassRestaurantCard(
                 .background(
                     Brush.linearGradient(
                         colors = listOf(
-                            Color.White.copy(alpha = 0.2f),
-                            Color.White.copy(alpha = 0.08f)
+                            Color.White.copy(alpha = 0.12f),
+                            Color.White.copy(alpha = 0.06f)
                         )
                     )
                 )
@@ -495,7 +535,7 @@ private fun LiquidGlassRestaurantCard(
                         Spacer(Modifier.height(8.dp))
                         Surface(
                             shape = RoundedCornerShape(12.dp),
-                            color = Color.White.copy(alpha = 0.2f)
+                            color = Color.White.copy(alpha = 0.15f)
                         ) {
                             Text(
                                 text = restaurant.tags,
@@ -518,8 +558,8 @@ private fun LiquidGlassRestaurantCard(
                         .background(
                             Brush.verticalGradient(
                                 colors = listOf(
-                                    Color.White.copy(alpha = 0.12f),
-                                    Color.White.copy(alpha = 0.05f)
+                                    Color.White.copy(alpha = 0.04f),
+                                    Color.Transparent
                                 )
                             )
                         )
@@ -538,7 +578,7 @@ private fun LiquidGlassRestaurantCard(
                         ) {
                             Surface(
                                 shape = CircleShape,
-                                color = Color.White.copy(alpha = 0.2f),
+                                color = Color.White.copy(alpha = 0.15f),
                                 modifier = Modifier.size(36.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
@@ -564,7 +604,7 @@ private fun LiquidGlassRestaurantCard(
                         ) {
                             Surface(
                                 shape = CircleShape,
-                                color = Color.White.copy(alpha = 0.2f),
+                                color = Color.White.copy(alpha = 0.15f),
                                 modifier = Modifier.size(36.dp)
                             ) {
                                 Box(contentAlignment = Alignment.Center) {
@@ -588,7 +628,7 @@ private fun LiquidGlassRestaurantCard(
                                 .fillMaxWidth()
                                 .height(54.dp),
                             shape = RoundedCornerShape(16.dp),
-                            color = Color.White.copy(alpha = 0.3f),
+                            color = Color.White.copy(alpha = 0.15f),
                             shadowElevation = 6.dp
                         ) {
                             Box(
@@ -597,8 +637,8 @@ private fun LiquidGlassRestaurantCard(
                                     .background(
                                         Brush.horizontalGradient(
                                             colors = listOf(
-                                                Color.White.copy(alpha = 0.35f),
-                                                Color.White.copy(alpha = 0.2f)
+                                                Color.White.copy(alpha = 0.1f),
+                                                Color.Transparent
                                             )
                                         )
                                     ),

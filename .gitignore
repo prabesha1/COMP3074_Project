@@ -13,3 +13,28 @@
 .externalNativeBuild
 .cxx
 local.properties
+
+# Kotlin
+.kotlin/
+*.kotlin_module
+*.kotlin_builtins
+
+# Build outputs
+*/build/
+**/build/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Android Studio
+*.iml
+.idea/
+.gradle/
+gradle-app.setting
+
+# Test results
+*.log
+*.class
+

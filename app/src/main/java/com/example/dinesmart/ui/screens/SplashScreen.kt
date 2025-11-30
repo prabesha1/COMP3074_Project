@@ -4,12 +4,10 @@ import androidx.compose.animation.core.*
 import androidx.compose.animation.animateContentSize
 import com.airbnb.lottie.compose.*
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.blur
 import coil.compose.AsyncImage
@@ -23,9 +21,6 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.semantics.contentDescription
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -39,7 +34,6 @@ import com.example.dinesmart.navigation.Routes
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material.icons.rounded.*
-import androidx.compose.ui.draw.rotate
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -49,12 +43,12 @@ fun SplashScreen(navController: NavHostController) {
     val restaurantsState by vm.restaurants.collectAsState()
 
     val featured: List<Restaurant> = if (restaurantsState.isNotEmpty()) restaurantsState.take(6) else listOf(
-        Restaurant(1, "Sushi Place", "Japanese • Sushi", 4, address = "123 Ocean Ave, Vancouver, BC", phone = "+1-604-555-0100", image = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c"),
-        Restaurant(2, "Burger Hub", "Fast Food", 5, address = "45 King St W, Toronto, ON", phone = "+1-416-555-0123", image = "https://images.unsplash.com/photo-1550547660-d9450f859349"),
-        Restaurant(3, "Spice Garden", "Indian", 3, address = "88 Queen St, Ottawa, ON", phone = "+1-613-555-0145", image = "https://images.unsplash.com/photo-1512058564366-18510be2db19"),
-        Restaurant(4, "Pasta Corner", "Italian", 4, address = "67 Main St, Montreal, QC", phone = "+1-514-555-0167", image = "https://images.unsplash.com/photo-1621996346565-e3dbc646d9a9"),
-        Restaurant(5, "Taco Town", "Mexican", 5, address = "99 Bay St, Calgary, AB", phone = "+1-403-555-0199", image = "https://images.unsplash.com/photo-1565299585323-38d6b0865b47"),
-        Restaurant(6, "BBQ Palace", "American BBQ", 4, address = "234 Elm St, Edmonton, AB", phone = "+1-780-555-0234", image = "https://images.unsplash.com/photo-1555939594-58d7cb561ad1")
+        Restaurant(1, "Sushi Place", "Japanese • Sushi", 4, address = "123 Ocean Ave, Vancouver, BC", phone = "+1-604-555-0100", lat = 49.2827, lng = -123.1207, image = "https://images.unsplash.com/photo-1546069901-ba9599a7e63c"),
+        Restaurant(2, "Burger Hub", "Fast Food", 5, address = "45 King St W, Toronto, ON", phone = "+1-416-555-0123", lat = 43.6486, lng = -79.3854, image = "https://images.unsplash.com/photo-1550547660-d9450f859349"),
+        Restaurant(3, "Spice Garden", "Indian", 3, address = "88 Queen St, Ottawa, ON", phone = "+1-613-555-0145", lat = 45.4215, lng = -75.6972, image = "https://images.unsplash.com/photo-1512058564366-18510be2db19"),
+        Restaurant(4, "Pasta Corner", "Italian", 4, address = "200 King St, Hamilton, ON", phone = "+1-905-555-0167", lat = 43.2557, lng = -79.8711, image = "https://images.unsplash.com/photo-1473093226795-af9932fe5856"),
+        Restaurant(5, "Taco Town", "Mexican", 5, address = "12 5th Ave, Calgary, AB", phone = "+1-403-555-0189", lat = 51.0447, lng = -114.0719, image = "https://images.unsplash.com/photo-1543353071-873f17a7a088"),
+        Restaurant(6, "Dragon Noodle House", "Chinese • Noodles", 4, address = "567 Main St, Vancouver, BC", phone = "+1-604-555-0201", lat = 49.2820, lng = -123.1171, image = "https://images.unsplash.com/photo-1582878826629-29b7ad1cdc43")
     )
 
     // Animated gradient background
@@ -267,6 +261,80 @@ fun SplashScreen(navController: NavHostController) {
                 }
             }
 
+            // Show all Restaurants Button
+            item {
+                Spacer(Modifier.height(8.dp))
+
+                Surface(
+                    onClick = {
+                        vm.loadSampleRestaurants()
+                        android.widget.Toast.makeText(
+                            context,
+                            "Loading all restaurants...",
+                            android.widget.Toast.LENGTH_SHORT
+                        ).show()
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .shadow(16.dp, RoundedCornerShape(24.dp), spotColor = Color.Black.copy(alpha = 0.3f)),
+                    shape = RoundedCornerShape(24.dp),
+                    color = Color.Transparent
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(
+                                Brush.linearGradient(
+                                    colors = listOf(
+                                        Color.White.copy(alpha = 0.18f),
+                                        Color.White.copy(alpha = 0.08f)
+                                    )
+                                )
+                            )
+                            .padding(24.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(12.dp)
+                        ) {
+                            Icon(
+                                Icons.Rounded.Restaurant,
+                                contentDescription = null,
+                                tint = Color.White,
+                                modifier = Modifier.size(28.dp)
+                            )
+                            Column(
+                                verticalArrangement = Arrangement.spacedBy(2.dp)
+                            ) {
+                                Text(
+                                    "Show all Restaurants",
+                                    style = MaterialTheme.typography.titleMedium.copy(
+                                        color = Color.White,
+                                        fontWeight = FontWeight.Bold,
+                                        fontSize = 18.sp
+                                    )
+                                )
+                                Text(
+                                    "Explore our complete collection",
+                                    style = MaterialTheme.typography.bodySmall.copy(
+                                        color = Color.White.copy(alpha = 0.8f),
+                                        fontWeight = FontWeight.Medium
+                                    )
+                                )
+                            }
+                            Spacer(Modifier.weight(1f))
+                            Icon(
+                                Icons.Rounded.ArrowForward,
+                                contentDescription = null,
+                                tint = Color.White.copy(alpha = 0.8f),
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
             item { Spacer(Modifier.height(20.dp)) }
         }
     }
@@ -284,7 +352,7 @@ private fun GlassButton(
         onClick = onClick,
         modifier = modifier.height(56.dp),
         shape = RoundedCornerShape(18.dp),
-        color = if (isPrimary) Color.White.copy(alpha = 0.3f) else Color.White.copy(alpha = 0.15f),
+        color = if (isPrimary) Color.White.copy(alpha = 0.15f) else Color.White.copy(alpha = 0.08f),
         shadowElevation = 8.dp
     ) {
         Box(
@@ -293,8 +361,8 @@ private fun GlassButton(
                 .background(
                     Brush.linearGradient(
                         colors = listOf(
-                            Color.White.copy(alpha = if (isPrimary) 0.35f else 0.2f),
-                            Color.White.copy(alpha = if (isPrimary) 0.15f else 0.05f)
+                            Color.White.copy(alpha = if (isPrimary) 0.15f else 0.08f),
+                            Color.Transparent
                         )
                     )
                 ),
@@ -333,7 +401,7 @@ private fun GlassRestaurantCard(
             .fillMaxWidth()
             .animateContentSize(),
         shape = RoundedCornerShape(28.dp),
-        color = Color.White.copy(alpha = 0.12f),
+        color = Color.Transparent,
         shadowElevation = 12.dp
     ) {
         Box(
@@ -342,8 +410,8 @@ private fun GlassRestaurantCard(
                 .background(
                     Brush.linearGradient(
                         colors = listOf(
-                            Color.White.copy(alpha = 0.18f),
-                            Color.White.copy(alpha = 0.06f)
+                            Color.White.copy(alpha = 0.12f),
+                            Color.White.copy(alpha = 0.04f)
                         )
                     )
                 )
@@ -504,7 +572,7 @@ private fun GlassStatCard(
     Surface(
         modifier = modifier,
         shape = RoundedCornerShape(24.dp),
-        color = Color.White.copy(alpha = 0.15f),
+        color = Color.Transparent,
         shadowElevation = 8.dp
     ) {
         Box(
@@ -513,8 +581,8 @@ private fun GlassStatCard(
                 .background(
                     Brush.linearGradient(
                         colors = listOf(
-                            Color.White.copy(alpha = 0.2f),
-                            Color.White.copy(alpha = 0.05f)
+                            Color.White.copy(alpha = 0.12f),
+                            Color.White.copy(alpha = 0.04f)
                         )
                     )
                 )
