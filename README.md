@@ -1,110 +1,250 @@
-🍽️ DineSmart – Restaurant Guide App
+# DineSmart - Restaurant Discovery Application
 
-“Discover. Dine. Delight.”
-A clean and intuitive restaurant-finding app prototype built with Kotlin + Jetpack Compose for COMP-3074 – Mobile Application Development I
+A comprehensive restaurant guide application built with modern Android development practices using Kotlin and Jetpack Compose.
 
-🎓 Course Information
+## Course Information
 
-Course Code: COMP-3074
+- **Course Code:** COMP-3074
+- **Course Title:** Mobile Application Development I
+- **Professor:** Przemyslaw Pawluk
+- **Semester:** Fall 2025
+- **Group:** G-55
 
-Course Title: Mobile Application Development I
+## Team Members
 
-Professor: Przemyslaw Pawluk
+| Name | Student ID | Role |
+|------|-----------|------|
+| Prabesh Shrestha | 101538718 | Front-End Development, UI/UX Design, Integration |
+| Moksh Chettri | 101515045 | Code Review, Navigation Architecture |
 
-Semester: Fall 2025
+## Project Overview
 
-Group: G-55
+DineSmart is a modern restaurant discovery application that enables users to explore dining options with comprehensive information including ratings, reviews, location details, and navigation capabilities. The application features a clean, intuitive interface built entirely with Jetpack Compose and follows Material Design 3 guidelines.
 
-Project Phase: 🧩 UI Prototype (Milestone 2)
+### Key Features
 
-👥 Team Members
-👤 Name	🧾 Student ID	🧩 Role
-Prabesh Shrestha	101538718	Front-End / UI Design & Integration / App Flow Development
-Moksh Chettri	101515045	Reviewer/ Navigation & App Flow Development
-🧠 About the Project
+- **Complete Restaurant Information:** Detailed restaurant profiles with ratings, cuisine types, addresses, and contact information
+- **Interactive Map Integration:** Google Maps SDK integration with custom markers and location-based features
+- **Search and Filter:** Advanced filtering by cuisine type, rating, and real-time search functionality
+- **User Reviews:** Firebase-powered review system with rating capabilities
+- **Navigation Assistance:** Integrated Google Maps directions with multiple travel modes
+- **Persistent Storage:** Room database for local data management
+- **Responsive Design:** Material 3 design system with glass morphism effects
 
-DineSmart is a modern, user-friendly restaurant-guide application that lets users explore dining options with ratings, reviews, and location details.
+## Application Architecture
 
-This milestone focuses solely on the UI Prototype — meaning all screens, layouts, and navigation flows are fully implemented with dummy data and placeholders to visualize the final app experience.
+### Navigation Flow
 
-✨ Prototype Highlights
+```
+SplashScreen (Home)
+    ├── RestaurantListScreen (Main)
+    │   ├── RestaurantDetailScreen
+    │   ├── AddRestaurantScreen
+    │   └── Search/Filter Interface
+    ├── MapScreen (Google Maps Integration)
+    ├── AboutScreen
+    └── Navigation Drawer
+```
 
-✅ Complete Screen Set – Splash · List · Details · Add · Map · About
+### Screen Descriptions
 
-✅ Working Navigation – Built with Jetpack Compose Navigation
+| Screen | Functionality | Implementation Details |
+|--------|--------------|----------------------|
+| Splash Screen | Application entry point with branding | Animated logo, featured restaurants carousel |
+| Restaurant List | Browse all restaurants with search/filter | LazyColumn with pull-to-refresh, filter chips |
+| Restaurant Detail | Comprehensive restaurant information | Reviews, ratings, directions, contact options |
+| Add Restaurant | Form to add new restaurant entries | Form validation, image URL support |
+| Map Screen | Interactive map with restaurant markers | Google Maps SDK, custom markers, location permissions |
+| About Screen | Application and team information | Course details, team credits |
 
-✅ Material 3 Design – Modern, clean, and fully responsive
+## Technology Stack
 
-✅ Dummy Data – Static restaurant list for demo purposes
+### Core Technologies
+- **Language:** Kotlin
+- **UI Framework:** Jetpack Compose
+- **Design System:** Material 3
+- **Minimum SDK:** 24 (Android 7.0)
+- **Target SDK:** 36
 
-✅ Interactive Buttons & Flows – Simulated add / map / details screens
+### Architecture & Libraries
+- **Architecture Pattern:** MVVM (Model-View-ViewModel)
+- **Navigation:** Jetpack Navigation Compose
+- **Database:** Room Persistence Library
+- **Backend:** Firebase (Firestore, Authentication, Storage)
+- **Maps:** Google Maps SDK for Android, Maps Compose
+- **Image Loading:** Coil
+- **Animations:** Lottie Compose
+- **Dependency Injection:** ViewModelProvider Factory
 
+### Development Tools
+- **IDE:** Android Studio Ladybug (2024.2.1)
+- **Build System:** Gradle with Kotlin DSL
+- **Version Control:** Git
 
-🧭 Navigation Flow
-SplashScreen → RestaurantListScreen
-      ↳ RestaurantDetailScreen
-      ↳ AddRestaurantScreen
-      ↳ MapScreen
-      ↳ AboutScreen
+## UI/UX Design
 
-🧩 Screens Overview
-Screen	Purpose	Notes
-Splash	App branding entry screen	Leads to Restaurant List
-Restaurant List	Shows dummy list with ratings & tags	Includes FAB to Add Restaurant
-Details	Displays selected restaurant info	Contains “Get Directions” & “Share” buttons
-Add Restaurant	Simple form with text fields	Placeholder (no database yet)
-Map	Static map image placeholder	For future Google Maps integration
-About	Project & team information	Includes course and group details
-⚙️ Technology Stack
-Component	Tool / Library
-Language	Kotlin
-UI Framework	Jetpack Compose (Material 3)
-Navigation	Navigation Compose
-IDE	Android Studio Ladybug (2025)
-Min SDK	24+
-🎨 UI Design Elements
+### Design Principles
+- Material Design 3 guidelines
+- Glass morphism effects for modern aesthetic
+- Consistent color theming and typography
+- Responsive layouts for various screen sizes
+- Accessibility considerations with semantic content descriptions
 
-✴️ TopAppBars for consistent titles
+### Visual Elements
+- Gradient backgrounds with animated orbs
+- Elevated cards with shadow effects
+- Floating action buttons for primary actions
+- Custom glass-style components (cards, buttons, text fields)
+- Interactive markers with color coding by rating
 
-🟣 Elevated Cards for restaurant entries
+## Database Schema
 
-🧭 Floating Action Button to add new restaurants
+### Restaurant Entity
+```
+- id: Int (Primary Key)
+- name: String
+- tags: String (Cuisine types)
+- rating: Int (1-5)
+- address: String
+- phone: String
+- latitude: Double (nullable)
+- longitude: Double (nullable)
+- image: String (nullable, URL)
+```
 
-🌈 Material 3 color scheme & typography
+### Review Entity
+```
+- id: String (Firebase document ID)
+- restaurantId: Int
+- userId: String
+- userName: String
+- rating: Float
+- comment: String
+- timestamp: Long
+```
 
-💬 Clear spacing and padding for readability
+## Setup Instructions
 
-Preview Includes:
+### Prerequisites
+1. Android Studio Ladybug or newer
+2. JDK 11 or higher
+3. Android SDK with API level 24 or higher
+4. Google Maps API key
+5. Firebase project configuration
 
-Splash → List → Details → Add → Map → About
+### Installation Steps
 
-Navigation flow demonstration
+1. Clone the repository
+```bash
+git clone [repository-url]
+cd DineSmart
+```
 
-Explanation of dummy data and UI structure
+2. Configure API Keys
+   - Create `local.properties` file in project root
+   - Add Google Maps API key:
+   ```
+   MAPS_API_KEY=your_google_maps_api_key_here
+   ```
 
+3. Firebase Setup
+   - Download `google-services.json` from Firebase Console
+   - Place it in `app/` directory
 
-🛠️ How to Run
+4. Build the Project
+   - Open project in Android Studio
+   - Sync Gradle dependencies
+   - Build > Make Project
 
-Open the project in Android Studio.
+5. Run the Application
+   - Connect Android device or start emulator
+   - Run > Run 'app'
 
-Sync Gradle dependencies.
+## Features Implementation
 
-Run on an emulator (API 24 +).
+### Implemented Features
+- Complete UI/UX with 6 main screens
+- MVVM architecture with ViewModels and Repository pattern
+- Room database for local persistence
+- Firebase Firestore for cloud-based reviews
+- Google Maps integration with custom markers
+- Runtime location permissions handling
+- Search and advanced filtering system
+- Navigation with deep linking support
+- Responsive Material 3 design
+- Image loading with Coil
+- Animated splash screen with Lottie
 
-Navigate through all screens to verify UI flow.
+### Data Management
+- 24 sample restaurants with complete information
+- JSON-based initial data loading
+- Reactive data flow with Kotlin Flows
+- Automatic database initialization
 
+## Project Structure
 
-🚀 Next Phase (Upcoming Milestone)
+```
+app/src/main/
+├── java/com/example/dinesmart/
+│   ├── data/
+│   │   ├── room/          # Room database entities and DAOs
+│   │   ├── firebase/      # Firebase services
+│   │   ├── maps/          # Google Maps services
+│   │   ├── Restaurant.kt
+│   │   ├── Review.kt
+│   │   ├── RestaurantViewModel.kt
+│   │   ├── RestaurantRepository.kt
+│   │   └── ReviewRepository.kt
+│   ├── navigation/
+│   │   ├── Routes.kt
+│   │   └── NavGraph.kt
+│   ├── ui/
+│   │   ├── components/    # Reusable UI components
+│   │   ├── screens/       # Application screens
+│   │   └── theme/         # Material 3 theming
+│   └── MainActivity.kt
+├── assets/
+│   └── restaurants.json   # Sample restaurant data
+└── res/
+    ├── drawable/
+    ├── values/
+    └── xml/
+```
 
-Integrate Room database for restaurant storage.
+## Testing
 
-Connect Google Maps API for real directions.
+- Unit tests for ViewModels and Repository classes
+- Instrumented tests for database operations
+- UI tests for critical user flows
+- Manual testing across multiple device configurations
 
-Add user reviews and ratings with Firebase.
+## Known Limitations
 
-Implement search and filter features.
+- Requires active internet connection for Firebase and Maps features
+- Location features require device GPS capabilities
+- Image URLs must be publicly accessible
 
-🏁 Acknowledgment
+## Future Enhancements
 
-Developed with passion by Group 90 – DineSmart Team
-© 2025 George Brown College | COMP-3074 – Mobile Application Development I
+- User authentication and profiles
+- Favorite restaurants feature
+- Advanced search with filters
+- Restaurant recommendations based on preferences
+- Social sharing capabilities
+- Offline mode improvements
+- Restaurant photo gallery
+- Reservation system integration
+
+## License
+
+This project is developed as part of academic coursework for COMP-3074 at George Brown College.
+
+## Acknowledgments
+
+Developed by Group G-55 for Mobile Application Development I
+George Brown College, Fall 2025
+
+---
+
+**Note:** This application is a student project developed for educational purposes.
+
